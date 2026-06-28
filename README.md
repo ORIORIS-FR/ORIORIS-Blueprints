@@ -92,7 +92,7 @@ docker run -d \
 📚 Références & Standards de l'Industrie
 Ce système a été conçu en s'intégrant aux standards de l'ingénierie IA 2026 :
 
-Intégration Agentique : Inspiré de **[n8n-nodes-langchain](https://www.google.com/search?q=https://github.com/n8n-io/n8n-nodes-langchain)**.
+Intégration Agentique : Inspiré de **[n8n-nodes-langchain](https://github.com/n8n-io/n8n-nodes-langchain)**.
 
 State Machines : Utilisation de LangGraph pour l'agent d'audit **[LangGraph (LangChain)](https://github.com/langchain-ai/langgraph)** .
 
