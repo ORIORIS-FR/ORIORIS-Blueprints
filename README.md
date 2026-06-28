@@ -55,7 +55,7 @@ graph TD
 📂 Anatomie du Dépôt
 L'architecture est segmentée pour garantir une isolation stricte entre l'acquisition (n8n) et l'exécution cognitive (Python).
 
-Plaintext
+```Plaintext
 ORIORIS-Blueprints/
 ├── README.md                              # Ce document
 ├── n8n_workflows/
@@ -66,7 +66,7 @@ ORIORIS-Blueprints/
     ├── agent.py                           # Cerbère d'audit d'infrastructure (LangGraph)
     ├── Dockerfile                         # Conteneurisation de l'agent
     └── requirements.txt                   # Dépendances (langchain, crewai, litellm)
-    
+```    
 ---    
 
 🚀 Déploiement & Configuration
