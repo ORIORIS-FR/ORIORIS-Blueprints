@@ -18,8 +18,8 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 # ==========================================
 llm = ChatOpenAI(
     model="bunker-auto", 
-    base_url="http://litellm_bunker:4000",
-    api_key="sk-fucking-hole", 
+    base_url=os.getenv("LITELLM_API_BASE", "http://litellm_bunker:4000"),
+    api_key=os.getenv("LITELLM_API_KEY", "VOTRE_CLE_API_ICI"), 
     max_retries=2
 )
 
@@ -66,10 +66,11 @@ def statut_infrastructure_docker() -> str:
 async def main_loop():
     print("🔌 Connexion à l'armurerie n8n (Protocole MCP)...")
     
-    # Configuration du client MCP (SearXNG via n8n)
+    # Configuration du client MCP sécurisée
+    url_mcp = os.getenv("MCP_N8N_URL", "http://n8n:5678/mcp/VOTRE_WEBHOOK_ID_ICI")
     client_mcp = MultiServerMCPClient({
         "n8n_searxng": {
-            "url": "http://n8n:5678/mcp/d498e040-fb00-4526-9771-9b0e35ed0db3",
+            "url": url_mcp,
             "transport": "sse"
         }
     })
