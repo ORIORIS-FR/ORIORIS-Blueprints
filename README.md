@@ -20,30 +20,25 @@ graph TD
     subgraph Forum [Forum Community n8n]
         A[n8n Forum] -->|Scan horaire| B(Schedule Trigger)
     end
-
     subgraph Acquisition [Pipeline Acquisition]
         B -->|HTTP Request| C[n8n_discourse_squad]
         C -->|Split & Filter| D{Detection Error/Bug}
         D -->|Nouveau| E[Dépôt cible_XXX.json]
     end
-
     %% --- Flux d'Intelligence ---
     subgraph Bunker [Bunker IA - Agentic Core]
         E -->|Guetteur| F(Agent Guetteur_Squad)
         F -->|Lecture| G{Comparaison<br>cibles_traitées.txt}
         G -->|Inédit| H[Traitement Agentique]
     end
-
     subgraph Squad [Escouade CrewAI]
         H --> I[Expert Veilleur Technique]
         I -->|Recherche SearXNG| J[Recherche contextuelle]
         J --> K[Architecte Senior]
         K -->|Rédaction| L[Note Obsidian<br>Injection contextuelle MCP]
     end
-
     %% --- Rangement ---
     L -->|Archivage| M[cibles_traitées.txt]
-
     %% --- Styles ---
     style Forum fill:#f39c12,stroke:#fff,color:#fff
     style Bunker fill:#2c3e50,stroke:#f1c40f,color:#fff
@@ -66,18 +61,14 @@ graph TD
         A2[litellm-config.yaml]
         A3[searxng_config.yml]
     end
-
     Trigger((Cron Interne<br>Tous les 3 jours)) -->|Charge l'état| Core
-
     %% --- Moteur LangGraph ---
     subgraph LangGraph [Cerveau LangGraph : Le Cerbère]
         Core{Agent ReAct<br>bunker-auto}
         Mem[(MemorySaver<br>Thread : audit_routine)]
         Core <-->|Garde le fil| Mem
     end
-
     Contexte -.->|Lecture| Core
-
     %% --- Arsenal d'Outils (Toolbox) ---
     subgraph Toolbox [Arsenal des Outils]
         direction TB
@@ -89,18 +80,14 @@ graph TD
             T3[🌐 n8n_searxng<br>Recherche Web / CVE]
         end
     end
-
     %% Boucle de Raisonnement
     Core -->|Action Request| Toolbox
     Toolbox -->|Observation| Core
-
     %% --- Intégrations Physiques ---
     T1 & T2 -->|Socket API /var/run/| D[🐳 Docker Daemon]
     T3 <-->|Protocole SSE| N[⚙️ Armurerie n8n]
-
     %% --- Sortie ---
     Core -->|Si nouveauté critique| Out[Rapport Obsidian<br>Injection contextuelle MCP]
-
     %% --- Styles ---
     style Contexte fill:#2c3e50,stroke:#fff,color:#fff
     style LangGraph fill:#8e44ad,stroke:#f1c40f,stroke-width:2px,color:#fff
