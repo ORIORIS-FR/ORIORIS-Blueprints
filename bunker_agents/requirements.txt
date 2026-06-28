@@ -1,0 +1,12 @@
+langchain
+langgraph
+langchain-openai
+langchain-community
+qdrant-client
+langchain-mcp-adapters
+crewai
+crewai-tools
+litellm
+docker>=7.1.0
+langgraph-checkpoint-postgres[pool]
+psycopg[binary]>=3.1.0
