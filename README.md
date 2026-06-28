@@ -61,11 +61,14 @@ ORIORIS-Blueprints/
 ├── n8n_workflows/
 │   └── acquisition_discourse_forum.json   # Workflow d'acquisition sanitisé
 └── bunker_agents/
+    ├── agent.py                           # Cerbère d'audit d'infrastructure (LangGraph)
     ├── squad_forum.py                     # L'escouade CrewAI (Éclaireur & Mécano)
     ├── guetteur_squad.py                  # Démon de surveillance des fichiers
-    ├── agent.py                           # Cerbère d'audit d'infrastructure (LangGraph)
+    ├── entrypoint.sh                      # Lance guetteur et agent ensemble
+    ├── requirements.txt                   # Dépendances (langchain, crewai, litellm)
     ├── Dockerfile                         # Conteneurisation de l'agent
-    └── requirements.txt                   # Dépendances (langchain, crewai, litellm)
+    └── outils/
+        └── searxng_tool.py                # Outil sur mesure
 ```    
 ---    
 
