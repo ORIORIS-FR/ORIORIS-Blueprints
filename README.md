@@ -38,7 +38,7 @@ graph TD
         H --> I[Expert Veilleur Technique]
         I -->|Recherche SearXNG| J[Recherche contextuelle]
         J --> K[Architecte Senior]
-        K -->|Rédaction| L[Note Obsidian<br>00_INBOX]
+        K -->|Rédaction| L[Note Obsidian<br>Injection contextuelle MCP]
     end
 
     %% --- Rangement ---
@@ -99,7 +99,7 @@ graph TD
     T3 <-->|Protocole SSE| N[⚙️ Armurerie n8n]
 
     %% --- Sortie ---
-    Core -->|Si nouveauté critique| Out[Rapport Markdown<br>Obsidian 00_INBOX]
+    Core -->|Si nouveauté critique| Out[Rapport Obsidian<br>Injection contextuelle MCP]
 
     %% --- Styles ---
     style Contexte fill:#2c3e50,stroke:#fff,color:#fff
