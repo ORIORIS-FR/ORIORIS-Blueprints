@@ -66,7 +66,9 @@ ORIORIS-Blueprints/
     ├── agent.py                           # Cerbère d'audit d'infrastructure (LangGraph)
     ├── Dockerfile                         # Conteneurisation de l'agent
     └── requirements.txt                   # Dépendances (langchain, crewai, litellm)
+    
 ---    
+
 🚀 Déploiement & Configuration
 Ce système est conçu pour tourner dans un environnement Docker sécurisé, derrière un routeur LLM (LiteLLM).
 
@@ -76,6 +78,7 @@ LITELLM_API_BASE="http://litellm_bunker:4000/v1"
 LITELLM_API_KEY="votre_cle_api_securisee"
 
 # Télémétrie
+
 CREWAI_TELEMETRY_OPT_OUT=true
 PYTHONUNBUFFERED=1
 Bash
@@ -86,6 +89,7 @@ docker run -d \
   -v ./obsidian:/obsidian_vault \
   --env-file .env \
   orioris_agent_veille
+  
 📚 Références & Standards de l'Industrie
 Ce système a été conçu en s'intégrant aux standards de l'ingénierie IA 2026 :
 
