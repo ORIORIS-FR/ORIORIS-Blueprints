@@ -50,6 +50,8 @@ graph TD
     style Squad fill:#2980b9,stroke:#fff,color:#fff
     style L fill:#8e44ad,stroke:#fff,color:#fff
     style G fill:#c0392b,stroke:#fff,color:#fff
+```
+---
 📂 Anatomie du Dépôt
 L'architecture est segmentée pour garantir une isolation stricte entre l'acquisition (n8n) et l'exécution cognitive (Python).
 
@@ -64,6 +66,7 @@ ORIORIS-Blueprints/
     ├── agent.py                           # Cerbère d'audit d'infrastructure (LangGraph)
     ├── Dockerfile                         # Conteneurisation de l'agent
     └── requirements.txt                   # Dépendances (langchain, crewai, litellm)
+---    
 🚀 Déploiement & Configuration
 Ce système est conçu pour tourner dans un environnement Docker sécurisé, derrière un routeur LLM (LiteLLM).
 
