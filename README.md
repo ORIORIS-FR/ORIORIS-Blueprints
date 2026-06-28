@@ -61,7 +61,7 @@ L'audit de l'infrastructure est géré par un agent autonome basé sur une archi
 ```mermaid
 graph TD
     %% --- Déclencheur & Contexte ---
-    subgraph Contexte [Système Fichiers (Lecture Seule)]
+    subgraph Contexte [Système Fichiers-Lecture Seule]
         A1[docker-compose.yml]
         A2[litellm-config.yaml]
         A3[searxng_config.yml]
