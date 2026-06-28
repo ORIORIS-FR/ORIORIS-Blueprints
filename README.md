@@ -72,16 +72,15 @@ ORIORIS-Blueprints/
 🚀 Déploiement & Configuration
 Ce système est conçu pour tourner dans un environnement Docker sécurisé, derrière un routeur LLM (LiteLLM).
 
-Bash
+```Bash
 # Routage LLM (LiteLLM Local recommandé)
 LITELLM_API_BASE="http://litellm_bunker:4000/v1"
 LITELLM_API_KEY="votre_cle_api_securisee"
-
 # Télémétrie
-
 CREWAI_TELEMETRY_OPT_OUT=true
 PYTHONUNBUFFERED=1
-Bash
+```
+```Bash
 cd bunker_agents
 docker build -t orioris_agent_veille .
 docker run -d \
@@ -89,7 +88,7 @@ docker run -d \
   -v ./obsidian:/obsidian_vault \
   --env-file .env \
   orioris_agent_veille
-  
+ ``` 
 📚 Références & Standards de l'Industrie
 Ce système a été conçu en s'intégrant aux standards de l'ingénierie IA 2026 :
 
