@@ -51,7 +51,67 @@ graph TD
     style L fill:#8e44ad,stroke:#fff,color:#fff
     style G fill:#c0392b,stroke:#fff,color:#fff
 ```
+
 ---
+
+### 🧠 Architecture du Cerbère (Agent LangGraph)
+
+L'audit de l'infrastructure est géré par un agent autonome basé sur une architecture **ReAct** (LangGraph). Il possède une mémoire persistante et un arsenal d'outils mixtes (locaux via socket, et distants via MCP) pour diagnostiquer le système de manière autonome.
+
+```mermaid
+graph TD
+    %% --- Déclencheur & Contexte ---
+    subgraph Contexte [Système Fichiers (Lecture Seule)]
+        A1[docker-compose.yml]
+        A2[litellm-config.yaml]
+        A3[searxng_config.yml]
+    end
+
+    Trigger((Cron Interne<br>Tous les 3 jours)) -->|Charge l'état| Core
+
+    %% --- Moteur LangGraph ---
+    subgraph LangGraph [Cerveau LangGraph : Le Cerbère]
+        Core{Agent ReAct<br>bunker-auto}
+        Mem[(MemorySaver<br>Thread : audit_routine)]
+        Core <-->|Garde le fil| Mem
+    end
+
+    Contexte -.->|Lecture| Core
+
+    %% --- Arsenal d'Outils (Toolbox) ---
+    subgraph Toolbox [Arsenal des Outils]
+        direction TB
+        subgraph Docker [Outils Docker Natifs]
+            T1[⚙️ statut_infrastructure_docker]
+            T2[📝 lire_logs_docker]
+        end
+        subgraph MCP [Outils Distants MCP]
+            T3[🌐 n8n_searxng<br>Recherche Web / CVE]
+        end
+    end
+
+    %% Boucle de Raisonnement
+    Core -->|Action Request| Toolbox
+    Toolbox -->|Observation| Core
+
+    %% --- Intégrations Physiques ---
+    T1 & T2 -->|Socket API /var/run/| D[🐳 Docker Daemon]
+    T3 <-->|Protocole SSE| N[⚙️ Armurerie n8n]
+
+    %% --- Sortie ---
+    Core -->|Si nouveauté critique| Out[Rapport Markdown<br>Obsidian 00_INBOX]
+
+    %% --- Styles ---
+    style Contexte fill:#2c3e50,stroke:#fff,color:#fff
+    style LangGraph fill:#8e44ad,stroke:#f1c40f,stroke-width:2px,color:#fff
+    style Toolbox fill:#2980b9,stroke:#fff,color:#fff
+    style Docker fill:#34495e,stroke:#ecf0f1,color:#fff
+    style MCP fill:#d35400,stroke:#ecf0f1,color:#fff
+    style Out fill:#27ae60,stroke:#fff,color:#fff
+```
+
+---
+
 📂 Anatomie du Dépôt
 L'architecture est segmentée pour garantir une isolation stricte entre l'acquisition (n8n) et l'exécution cognitive (Python).
 
