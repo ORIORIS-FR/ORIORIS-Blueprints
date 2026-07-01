@@ -55,45 +55,59 @@ L'audit de l'infrastructure est géré par un agent autonome basé sur une archi
 
 ```mermaid
 graph TD
-    %% --- Déclencheur & Contexte ---
-    subgraph Contexte [Système Fichiers-Lecture Seule]
+    %% --- Bloc Contexte (Recentré en haut) ---
+    subgraph Contexte [Système Fichiers - Lecture Seule]
         A1[docker-compose.yml]
         A2[litellm-config.yaml]
         A3[searxng_config.yml]
     end
-    Trigger((Cron Interne<br>Tous les 3 jours)) -->|Charge l'état| Core
-    %% --- Moteur LangGraph ---
+
+    %% --- Bloc Moteur LangGraph (Le Cœur Central) ---
     subgraph LangGraph [Cerveau LangGraph : Le Cerbère]
         Core{Agent ReAct<br>bunker-auto}
         Mem[(MemorySaver<br>Thread : audit_routine)]
         Core <-->|Garde le fil| Mem
     end
+
+    %% --- Liaison Déclencheur ---
+    Trigger((Cron Interne<br>Tous les 3 jours)) -->|Charge l'état| Core
     Contexte -.->|Lecture| Core
-    %% --- Arsenal d'Outils (Toolbox) ---
+
+    %% --- Arsenal d'Outils (Placé sous le cœur) ---
     subgraph Toolbox [Arsenal des Outils]
-        direction TB
+        direction LR
         subgraph Docker [Outils Docker Natifs]
-            T1[⚙️ statut_infrastructure_docker]
-            T2[📝 lire_logs_docker]
+            T1[⚙️ statut_infra]
+            T2[📝 lire_logs]
         end
         subgraph MCP [Outils Distants MCP]
-            T3[🌐 n8n_searxng<br>Recherche Web / CVE]
+            T3[🌐 n8n_searxng]
         end
     end
-    %% Boucle de Raisonnement
-    Core -->|Action Request| Toolbox
-    Toolbox -->|Observation| Core
-    %% --- Intégrations Physiques ---
-    T1 & T2 -->|Socket API /var/run/| D[🐳 Docker Daemon]
-    T3 <-->|Protocole SSE| N[⚙️ Armurerie n8n]
-    %% --- Sortie ---
+
+    %% --- Intégrations Physiques (Base du schéma) ---
+    subgraph Infrastructure [Couche Exécution]
+        D[🐳 Docker Daemon]
+        N[⚙️ Armurerie n8n]
+    end
+
+    %% --- Flux de communication ---
+    Core ===>|Action Request| Toolbox
+    Toolbox ===>|Observation| Core
+
+    T1 & T2 -->|Socket API /var/run/| D
+    T3 <-->|Protocole SSE| N
+
+    %% --- Sortie (À côté du cœur pour l'équilibre visuel) ---
     Core -->|Si nouveauté critique| Out[Rapport Obsidian<br>Injection contextuelle MCP]
+
     %% --- Styles ---
     style Contexte fill:#2c3e50,stroke:#fff,color:#fff
     style LangGraph fill:#8e44ad,stroke:#f1c40f,stroke-width:2px,color:#fff
     style Toolbox fill:#2980b9,stroke:#fff,color:#fff
     style Docker fill:#34495e,stroke:#ecf0f1,color:#fff
     style MCP fill:#d35400,stroke:#ecf0f1,color:#fff
+    style Infrastructure fill:#23272a,stroke:#fff,color:#fff
     style Out fill:#27ae60,stroke:#fff,color:#fff
 ```
 
