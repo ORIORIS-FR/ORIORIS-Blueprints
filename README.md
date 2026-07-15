@@ -161,3 +161,12 @@ Intégration Agentique : Inspiré de **[n8n-nodes-langchain(n8n)](https://docs.n
 State Machines : Utilisation de LangGraph pour l'agent d'audit **[LangGraph (LangChain)](https://github.com/langchain-ai/langgraph)** .
 
 Orchestration Multi-Agents : Routage via CrewAI connecté en natif à LiteLLM **[CrewAI(CrewAI)](https://github.com/crewAIInc/crewAI)**.
+
+📂 Bibliothèque de Blueprints (n8n_workflows/)
+Ce dépôt sert de bibliothèque centrale pour les patterns d'automatisation agentique ORIORIS. Chaque fichier JSON est indépendant et conçu pour une fonction spécifique :
+
+acquisition_discourse_forum.json : Pipeline de veille automatisée (Détection/Raisonnement/Persistance). Voir section "Squad Forum" ci-dessus.
+
+rag_obsidian.json : Pipeline d'ingestion RAG pour Obsidian. Assure l'intégrité de la base de données vectorielle (Qdrant).
+
+Director_AI_Russell.json : Directeur IA (Agent de commandement). Gère les interactions Telegram, le routage d'outils (MCP) et l'audit de logique utilisateur.
