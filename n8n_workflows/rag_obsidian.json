@@ -1,0 +1,507 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "vault-cerveau",
+          "mode": "id"
+        },
+        "embeddingBatchSize": 50,
+        "options": {
+          "collectionConfig": ""
+        }
+      },
+      "id": "b5872b29-0d1d-4651-8be6-dfd7af9ad05b",
+      "name": "Insert into Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "position": [
+        144,
+        880
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "qdrantApi": {
+          "id": "sJuz0K9H4xa3rYfv",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "type",
+                "value": "={{ $json.frontmatter.type }}"
+              },
+              {
+                "name": "status",
+                "value": "={{ $json.frontmatter.status }}"
+              },
+              {
+                "name": "tags",
+                "value": "={{ JSON.stringify($json.frontmatter.tags) }}"
+              },
+              {
+                "name": "title",
+                "value": "={{ $json.extracted_title }}"
+              },
+              {
+                "name": "fileName",
+                "value": "={{ $json.fileName }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e36195db-fe28-4ae4-8474-a2a3d98be245",
+      "name": "Load File Content & Metadata",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        288,
+        1088
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 50,
+        "options": {}
+      },
+      "id": "96c2d411-ef2b-4126-b5bd-c14fb7b22302",
+      "name": "Split into Chunks",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        288,
+        1328
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "=nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        32,
+        1056
+      ],
+      "id": "dce31960-d2a3-4a2e-b238-b0938412ec9d",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "gcsy26D7hRqCEVuE",
+          "name": "Ollama Bunker Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        1136
+      ],
+      "id": "287887b7-544e-43a6-b849-fa22ba3fc833",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1); \n\nlet i = 0;\nfor (const item of $input.all()) {\n  let text = \"\";\n\n  // 1. LECTURE SÉCURISÉE (On gère le binaire et le texte)\n  if (item.binary && item.binary.data) {\n      const buffer = await this.helpers.getBinaryDataBuffer(i, 'data');\n      text = buffer.toString('utf-8');\n  } else if (item.json && item.json.data) {\n      text = String(item.json.data);\n  }\n\n  // --- LE KILL SWITCH : MUR DE BÉTON ANTI-VIDE ---\n  if (!text || text.trim() === \"\" || text === \"undefined\") {\n      // Ce 'throw' va exploser le nœud instantanément et stopper tout le workflow.\n      throw new Error(`🛑 KILL SWITCH ACTIVÉ : La note [${item.json.fileName || 'Inconnue'}] est vide ou corrompue. Arrêt immédiat pour protéger Russell et Qdrant.`);\n  }\n  // -----------------------------------------------\n\n  // 2. FILTRE TEMPOREL (Delta 24h)\n  const dateMatch = text.match(/updated_at:\\s*([^\\n\\r]+)/);\n  let isModifiedRecently = false;\n  \n  if (dateMatch && dateMatch[1]) {\n      const noteDate = new Date(dateMatch[1].trim());\n      if (!isNaN(noteDate) && noteDate >= yesterday) {\n          isModifiedRecently = true;\n      }\n  }\n  \n  if (!isModifiedRecently) {\n      i++;\n      continue; \n  }\n\n  // 3. EXTRACTION TITRE & DATA\n  let computedTitle = \"Note Sans Titre\";\n  if (item.json.fileName) {\n    const parts = item.json.fileName.split('/');\n    const rawName = parts[parts.length - 1];\n    computedTitle = rawName.replace('.md', '');\n  }\n  \n  item.json.extracted_title = computedTitle;\n  item.json.note_content = text; \n  \nitem.json.qdrant_filter = {\n    \"must\": [\n      {\n      \"key\": \"metadata.fileName\",\n      \"match\": {\n        \"value\": String(item.json.fileName)\n        }\n      }\n    ]\n  };\n\n// 4. SAS DE ROUTAGE (Regex stricte pour le frontmatter)\n  // Le ^ vérifie que c'est bien le début de la ligne, évitant les faux positifs dans le texte.\n  if (/^rag_sync:\\s*true/m.test(text)) {\n    item.json.rag_action = 'upsert';\n    results.push(item);\n  } else if (/^rag_sync:\\s*false/m.test(text)) {\n    item.json.rag_action = 'delete';\n    results.push(item);\n  }\n  \n  i++;\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        912
+      ],
+      "id": "cffef37e-a6f6-469b-ba79-6c14c405eec4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/vault/**/*.md",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -880,
+        912
+      ],
+      "id": "69d2d088-3bea-495b-9cbe-abb7cdae3b48",
+      "name": "/vault/**/*.md"
+    },
+    {
+      "parameters": {
+        "resource": "point",
+        "operation": "deletePoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "vault-cerveau",
+          "mode": "list",
+          "cachedResultName": "vault-cerveau"
+        },
+        "points": "=",
+        "filter": "={{ JSON.stringify($json.qdrant_filter) }}",
+        "shardKey": "=null",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        832
+      ],
+      "id": "a1833561-daac-4947-bf8b-07ceec44a979",
+      "name": "Delete Points",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "2rLOtwbmLDi0c1qY",
+          "name": "Qdrant House"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rag_action }}",
+                    "rightValue": "upsert",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9bb9cfd8-a017-4168-b546-0e60019eb201"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Vers Upsert (True)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3f0073bd-d7d4-46a2-93ee-11112481cca0",
+                    "leftValue": "={{ $json.rag_action }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Vers Purge (False)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        912
+      ],
+      "id": "fb351fda-7b22-4b7d-86e3-322df737ebb2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "point",
+        "operation": "deletePoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "vault-cerveau",
+          "mode": "list",
+          "cachedResultName": "vault-cerveau"
+        },
+        "points": "=",
+        "filter": "={{ JSON.stringify($json.qdrant_filter) }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        1104
+      ],
+      "id": "442fc740-a24a-4181-bde0-b465f5fa1056",
+      "name": "Delete Points1",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "2rLOtwbmLDi0c1qY",
+          "name": "Qdrant House"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// On ignore le reçu de Qdrant et on retourne dans le passé\n// pour récupérer les données intactes sorties de la branche 0 (Upsert) du Switch.\nreturn $('Switch').all(0);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        832
+      ],
+      "id": "382680ee-9385-429f-b5d4-bd535685f0b2",
+      "name": "Restauration des Données"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "18fba900-52f2-45e0-94d3-bb742f1cf5b9",
+                    "leftValue": "={{ $json.note_content.length > 2000 || /bug|urgent|architecture|concept|décision|priorité/i.test($json.note_content) }}",
+                    "rightValue": "={{ true }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": "={{ true }}",
+              "outputKey": "Vers Directeur Russell"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "63471138-03c5-4197-b64e-beb598b79a4b",
+      "name": "Sas de Qualité NEXUS",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        144,
+        656
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "TYNwS9xnpRHI1XDE",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "notes_du_jour": "={{ $input.all().map(item => `Source: ${item.json.fileName}\\nExtrait:\\n${item.json.note_content.substring(0, 800)}...`).join('\\n\\n--- NOUVELLE NOTE ---\\n\\n') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "notes_du_jour",
+              "displayName": "notes_du_jour",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "name": "Call 'Directeur IA Russell' (ASYNCHRONE)",
+      "id": "09b0e861-bbb6-452d-8318-b57815fc211a",
+      "position": [
+        336,
+        656
+      ]
+    }
+  ],
+  "connections": {
+    "Insert into Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "Load File Content & Metadata": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split into Chunks": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Load File Content & Metadata",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "/vault/**/*.md",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/vault/**/*.md": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Points": {
+      "main": [
+        [
+          {
+            "node": "Restauration des Données",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Delete Points",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Points1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restauration des Données": {
+      "main": [
+        [
+          {
+            "node": "Sas de Qualité NEXUS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert into Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sas de Qualité NEXUS": {
+      "main": [
+        [
+          {
+            "node": "Call 'Directeur IA Russell' (ASYNCHRONE)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ae6456a6ab1abb9468e9e25a4065e8d75bf1b835a4dd18a7345c88e3618d9182"
+  }
+}
