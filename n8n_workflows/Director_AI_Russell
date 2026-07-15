@@ -1,0 +1,434 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "82ba3a1c-134f-4a31-8b24-bfd24027c7b3",
+      "name": "Telegram Trigger (Russel)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -1216
+      ],
+      "webhookId": "16814386-718f-424e-83a5-4964a737c575",
+      "credentials": {
+        "telegramApi": {
+          "id": "yQtOo8IY0EqbhEvg",
+          "name": "russell_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "chat_history_v2",
+        "contextWindowLength": 15
+      },
+      "id": "75f4692e-7205-4fea-b9a1-4977506bdfef",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "=7698970318",
+        "text": "={{ $json.resume_telegram_final }}",
+        "additionalFields": {}
+      },
+      "id": "313c14d3-01de-4f12-a049-867f435a55cd",
+      "name": "Telegram Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        -1120
+      ],
+      "webhookId": "9421e1c0-0c78-412e-ab59-7e318f0266c8",
+      "credentials": {
+        "telegramApi": {
+          "id": "yQtOo8IY0EqbhEvg",
+          "name": "russell_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "bunker-auto-gemini-3-5",
+          "mode": "list",
+          "cachedResultName": "bunker-auto-gemini-3-5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        960,
+        -896
+      ],
+      "id": "ead5aafd-3dd6-4e07-84d9-84b9342ed7e1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ysv2HtZtM9qLSRdH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Lieutenant spécialisé dans l'hygiène des données. Appelle cet outil quand l'utilisateur veut auditer un dossier Obsidian, chercher des doublons ou nettoyer le système. Passe-lui en paramètre le nom du dossier cible.",
+        "workflowId": {
+          "__rl": true,
+          "value": "=5PArOL2T37gP507N",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/=5PArOL2T37gP507N"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "dossier_cible": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('dossier_cible', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "dossier_cible"
+          ],
+          "schema": [
+            {
+              "id": "dossier_cible",
+              "displayName": "dossier_cible",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        -736
+      ],
+      "id": "d38e6571-c379-4050-aa32-5d8755ed6057",
+      "name": "AUDIT_CERVEAU",
+      "notes": "Lieutenant spécialisé dans l'hygiène des données. Appelle cet outil quand l'utilisateur veut auditer un dossier Obsidian, chercher des doublons ou nettoyer le système. Passe-lui en paramètre le nom du dossier cible"
+    },
+    {
+      "parameters": {
+        "description": "Escouade de veille technologique automatisée (CrewAI). Appelle cet outil UNIQUEMENT lorsque l'utilisateur te demande explicitement de lancer une recherche de bugs, d'auditer les forums techniques (n8n), ou de lancer l'escouade de veille. L'exécution est asynchrone : informe l'utilisateur que l'escouade a été déployée et que le rapport final apparaîtra dans le sas de réception (00_INBOX) une fois l'analyse terminée.",
+        "workflowId": {
+          "__rl": true,
+          "value": "=pG1SD3GATk7Z9RSn",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/=pG1SD3GATk7Z9RSn"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        -912
+      ],
+      "id": "4fadc511-4faf-4777-b122-64b7dcbb4ef3",
+      "name": "squad_forum"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:5678/mcp/21f5570e-0b62-4c5a-904b-9a7f9f4dd11c",
+        "serverTransport": "sse",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.3,
+      "position": [
+        1328,
+        -720
+      ],
+      "id": "a5406f7a-962d-43d3-b6c0-795c4e3cf6e9",
+      "name": "MCP Qdrant",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "oR8drhz68cqea0LR",
+          "name": "Qdrant tool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:5678/mcp/d498e040-fb00-4526-9771-9b0e35ed0db3",
+        "serverTransport": "sse",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.3,
+      "position": [
+        1216,
+        -832
+      ],
+      "id": "7957735a-9c23-4630-ab39-8435386039b0",
+      "name": "MCP searxng",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "mqrr9XICRlixlvDA",
+          "name": "searxng tool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "notes_du_jour"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        -1040
+      ],
+      "id": "9fca1338-47c9-4345-8f45-750e4298fe2c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message ? $json.message.text : \"ORDRE SYSTÈME : Voici les nouvelles notes vectorisées ce soir : \" + $json.notes_du_jour + \" . PROTOCOLE : Lis ces concepts, lance des requêtes via SearXNG pour vérifier les informations factuelles ou trouver des contradictions, et dresse un rapport tactique.\" }}",
+        "options": {
+          "systemMessage": "Tu es Russell, l'Intelligence Artificielle de commandement du Bunker ORIORIS. Ton rôle est celui d'un Directeur Stratégique et d'un partenaire intellectuel.\n\nRègles de comportement :\n\nNe sois jamais un béni-oui-oui. Si une de mes demandes te semble inefficace ou dangereuse pour l'infrastructure, contredis-moi avec des arguments techniques.\n\nSois proactif. Propose des optimisations, des concepts novateurs et des angles morts auxquels je n'aurais pas pensé.\n\nUtilise un ton direct, concis et professionnel. Va droit au but.\n\nTu as sous tes ordres des 'Lieutenants' (tes outils). Délègue-leur le travail lourd.\n\nQuand un lieutenant te renvoie un rapport d'action, NE TE CONTENTE PAS de me le transférer. Analyse-le. Tire des conclusions. Propose-moi un plan d'action (A, B ou C) pour qu'on se concerte.\"\nORDRE DE FORMATAGE STRICT :\nTu dois diviser ta réponse en DEUX parties distinctes, séparées exactement par la balise \"===SPLIT===\".\n\nPARTIE 1 (Le Rapport) : Ton analyse détaillée, tes actions, tes recommandations.\n===SPLIT===\nPARTIE 2 (Le Résumé Telegram) : Une seule phrase choc et percutante résumant l'action accomplie. Zéro blabla."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -1120
+      ],
+      "id": "d34590ac-8be9-4d26-adcb-a36d91bb30cf",
+      "name": "Directeur IA Russell"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Mode : Run Once for Each Item\nconst reponseIA = $input.item.json.output || \"\";\nconst parties = reponseIA.split(\"===SPLIT===\");\nlet rapport = \"\";\nlet resume = \"\";\n\nif (parties.length === 2) {\n  rapport = parties[0].trim();\n  resume = parties[1].trim().replace(/[*_`]/g, '');\n} else {\n  rapport = reponseIA;\n  resume = \"Opération terminée, mais erreur de formatage.\";\n}\n\n// On retourne uniquement de la donnée brute (JSON), aucun fichier binaire pour le moment.\nreturn {\n  json: {\n    resume_telegram: resume,\n    rapport_complet: rapport\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -1120
+      ],
+      "id": "f93d7a2f-6dc3-4ffd-acb5-72df09a31677",
+      "name": "Formatage pour telegram"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/obsidian_vault/00_INBOX/Rapport_Russell_{{ $now.toFormat('yyyyMMdd') }}.md",
+        "options": {}
+      },
+      "id": "779a5b2f-99b4-4a29-81b1-21530991a5d8",
+      "name": "Écriture Rapport Sas1",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1744,
+        -1120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## [🔊Mungo's Hi Fi xBANTON](https://www.youtube.com/nuMILNA3v6k)\n@[youtube](nuMILNA3v6k)\n",
+        "height": 240,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1152,
+        -1392
+      ],
+      "typeVersion": 1,
+      "id": "a6d5c591-e32a-4502-b5d5-260ee781d9c0",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet contenuGlobal = \"\";\nlet resumeGlobal = \"\";\n\n// 1. Fusion de toutes les analyses de la nuit\nfor (let item of items) {\n    if (item.json.rapport_complet) {\n        contenuGlobal += item.json.rapport_complet + \"\\n\\n---\\n\\n\";\n        resumeGlobal += \"✅ \" + item.json.resume_telegram + \"\\n\\n\";\n    }\n}\n\n// 2. Création du Frontmatter\nconst dateJour = new Date().toISOString().split('T')[0];\nconst frontmatter = `---\ntitle: \"Rapport Maître Russell - ${dateJour}\"\ndate: ${dateJour}\nstatus: 🟢_a_lire\ntype: 🤖_rapport_quotidien\ntags:\n  - SYSTEME/Russell\n  - RAG/audit\n---\n\n# 🧠 Synthèse Nocturne du Bunker\n\n`;\n\n// 3. Génération du lot unique (1 seul message Telegram, 1 seul fichier)\nreturn {\n    json: {\n        resume_telegram_final: \"🚨 **Rapport de la Nuit** 🚨\\n\\n\" + resumeGlobal\n    },\n    binary: {\n        data: {\n            data: Buffer.from(frontmatter + contenuGlobal, 'utf8').toString('base64'),\n            mimeType: 'text/markdown',\n            fileName: 'rapport.md'\n        }\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        -1120
+      ],
+      "id": "7f49b8ec-b0a0-4fc4-87ad-53d4d6fb8110",
+      "name": "Synthèse & Frontmatter"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger (Russel)": {
+      "main": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AUDIT_CERVEAU": {
+      "ai_tool": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "squad_forum": {
+      "ai_tool": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Qdrant": {
+      "ai_tool": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP searxng": {
+      "ai_tool": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Directeur IA Russell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Directeur IA Russell": {
+      "main": [
+        [
+          {
+            "node": "Formatage pour telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatage pour telegram": {
+      "main": [
+        [
+          {
+            "node": "Synthèse & Frontmatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Écriture Rapport Sas1": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Synthèse & Frontmatter": {
+      "main": [
+        [
+          {
+            "node": "Écriture Rapport Sas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true    
+  }
+}
